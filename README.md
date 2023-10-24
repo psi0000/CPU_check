@@ -1,5 +1,3 @@
-# CPU_check
-
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -60,7 +58,7 @@ struct ProcessInfo {
                 std::istringstream lineStream(line);
                 ProcessInfo processInfo;
                 lineStream >> processInfo.pid >>processInfo.name>> processInfo.pr>>processInfo.ni>>processInfo.virt>>processInfo.res>>processInfo.shr>>processInfo.s>>processInfo.cpuUsage>>processInfo.mem>>processInfo.time>> processInfo.command;
-                if(processInfo.cpuUsage >100.0){
+                if(processInfo.cpuUsage >90.0){
                     processList.push_back(processInfo);
                     
                 }
@@ -75,9 +73,10 @@ class CpuClient : public rclcpp::Node
         CpuClient()
         : Node("cpu_tester")
         {
-            
-            while(1){
-                    
+            //reset file
+            std::ofstream file("cur_time.txt");
+            file.close();
+            while(1){            
                 auto node1=std::make_shared<rclcpp::Node>("cur_time_node");
                 rclcpp::Clock clock(RCL_ROS_TIME);
                 rclcpp::Time current_time = clock.now();
@@ -87,35 +86,38 @@ class CpuClient : public rclcpp::Node
                 localtime_r(&seconds_since_epoch, &local_time);
     
                 std::stringstream time_stream;
-                // time_stream << local_time.tm_hour << ":" << local_time.tm_min<<":"<<local_time.tm_sec<<":"<<current_time.nanoseconds;
-                
                 time_stream << local_time.tm_hour << ":" << local_time.tm_min<<":"<<local_time.tm_sec;
                 std::string cur_time=time_stream.str();
-
-
                 // RCLCPP_INFO(node1->get_logger(),"current_time : %s",cur_time.c_str());
                 
                 std::vector<ProcessInfo> topProcesses = GetTopProcesses(numProcesses);
-
+                
+                
+                //add data in file
+                std::ofstream file("cur_time.txt",std::ios::app);        
                 if (topProcesses.empty()) {
                     //std::cerr << "프로세스 정보를 가져오는 데 실패했습니다." << std::endl;
                 } else {
                     std::cout << "상위 " << numProcesses << " CPU 사용량이 높은 프로세스:" << std::endl;
+                    
                     for (const ProcessInfo& process : topProcesses) {
                         std::cout<<"TIME: "<< cur_time<< " | PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | time: " << process.time << " | cmd: " << process.command  <<std::endl;
-                        std::ofstream file("cur_time.txt");
+                        
                         if(file.is_open()){
-                            file << "TIME: "<<cur_time<<" | PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | time: " << process.time << " | cmd: " << process.command;
-                            file.close();
+                            file << "TIME: "<<cur_time<<" | PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | time: " << process.time << " | cmd: " << process.command<< std::endl;
+                            
                         }
+                    
                     }
+                   
                 }
+                file.close();
                 //std::cout <<"*********************************************************************"<<std::endl;
                 
                 
                 //rclcpp::shutdown();
             }
-            
+             file.close();
 
             
         }
