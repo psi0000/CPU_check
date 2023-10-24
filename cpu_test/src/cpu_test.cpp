@@ -22,8 +22,11 @@ struct ProcessInfo {
             double virt;
             double res;
             double shr;
+            std::string name;
             std::string s;
             double cpuUsage;
+            double mem;
+            std::string time;
             std::string command;
 };
         std::vector<ProcessInfo> GetTopProcesses(int numProcesses) {
@@ -44,7 +47,7 @@ struct ProcessInfo {
                     
                 }
             }
-            std::cout <<result<<std::endl;
+            // std::cout <<result<<std::endl;
 
             // 결과 파싱
             std::istringstream stream(result);
@@ -54,9 +57,29 @@ struct ProcessInfo {
             while (std::getline(stream, line)) {
                 std::istringstream lineStream(line);
                 ProcessInfo processInfo;
-                lineStream >> processInfo.pid >> processInfo.command >> processInfo.pr>>processInfo.ni>>processInfo.virt>>processInfo.res>>processInfo.shr>>processInfo.s>>processInfo.cpuUsage;
-                if(processInfo.cpuUsage >0.0){
+                lineStream >> processInfo.pid >>processInfo.name>> processInfo.pr>>processInfo.ni>>processInfo.virt>>processInfo.res>>processInfo.shr>>processInfo.s>>processInfo.cpuUsage>>processInfo.mem>>processInfo.time>> processInfo.command;
+                if(processInfo.cpuUsage >90.0){
                     processList.push_back(processInfo);
+                    
+                    std::string command1 = "top -b -n1 > cpu_log.txt";
+                    std::array<char, 128> buffer1;
+                    std::shared_ptr<FILE> pipe1(popen(command1.c_str(), "r"), pclose);
+                    std::string result1;
+
+                    if (!pipe1) {
+                        std::cerr << "top save fail" << std::endl;
+                        return {};
+                    }
+                    buffer1.empty();
+                    // 결과 읽기
+                    while (!feof(pipe1.get())) {
+                        if (fgets(buffer1.data(), static_cast<int>(buffer1.size()), pipe1.get()) != nullptr) {
+                            result1 += buffer1.data();
+                            
+                        }
+                    }
+
+                    std::cout <<result<<std::endl;
                 }
                 
             }
@@ -77,7 +100,7 @@ class CpuClient : public rclcpp::Node
                 } else {
                     std::cout << "상위 " << numProcesses << " CPU 사용량이 높은 프로세스:" << std::endl;
                     for (const ProcessInfo& process : topProcesses) {
-                        std::cout << "PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | 명령: " << process.command << std::endl;
+                        std::cout << "PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | cmd: " << process.command << std::endl;
                     }
                 }
                 std::cout <<"*********************************************************************"<<std::endl;
