@@ -12,15 +12,24 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 add_executable(cpu_test src/cpu_test.cpp)
-ament_target_dependencies(cpu_test
+add_executable(test_node src/test_node.cpp)
+
+ament_target_dependencies(cpu_test 
     rclcpp
     std_msgs
 )
-install(TARGETS cpu_test
+
+ament_target_dependencies(test_node
+    
+    rclcpp
+    std_msgs
+)
+install(TARGETS cpu_test test_node
     DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_export_dependencies(
+    
     rclcpp
     std_msgs
 )

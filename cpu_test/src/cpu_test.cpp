@@ -14,6 +14,7 @@
 #include <vector>
 #include <array>
 #include <cstdio>
+#include <unistd.h>
 int numProcesses = 10; // 상위 몇 개의 프로세스를 가져올 것인지 설정하세요.
 
 struct ProcessInfo {
@@ -71,8 +72,11 @@ class CpuClient : public rclcpp::Node
 {
     public:
         CpuClient()
-        : Node("cpu_tester")
+        : Node("cpu_test")
         {
+            pid_t pid_;
+            pid_ = getpid();
+            std::cout <<pid_ <<std::endl;
             //reset file
             std::ofstream file("cur_time.txt");
             file.close();
