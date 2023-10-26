@@ -102,15 +102,15 @@ class getCPU : public rclcpp::Node
                 file.close();
             //progress -> find pid   
                 std::vector<int> node_pids = {};
-                std::vector<std::string> node_names = {"cpu_test","rqt"}; // 원하는 노드 이름으로 변경
+                //std::vector<std::string> node_names = {"cpu_test","rqt"}; // 원하는 노드 이름으로 변경
             
-                /* 
+                 
                 std::vector<std::string> node_names = 
-                 {"r1.a", "r2.c", "r2.s", "r3.c", "r3.s", "r4.a", "r5.a", 
-                "avoidance_manager", "avoidance_handler", "line_up_manager","line_up_handler", "recovery_manager",
-                "recovery_handler", "robot_manager", "agent_handler","priority_manager", "fleet_manager",
-                "one_way_filter_saver", "one_way_filter_server", "one_way_detector"};
-                */
+                 {"kt_navigation_m","r2r_r1a", "r2r_r2c", "r2r_r2s", "r2r_r3c", "r2r_r3s", "r2r_r4a", "r2r_r5a", 
+                "avoidance_manag", "avoidance_handl", "line_up_manager","line_up_handler", "recovery_manage",
+                "recovery_handle", "robot_manager_n","log_manager","priority_manage", "fleet_manager"
+                };
+                
 
 
 
