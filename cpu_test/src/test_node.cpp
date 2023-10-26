@@ -29,9 +29,14 @@ struct ProcessInfo {
 };
 
 int getPID(const std::string &node_name) {
-        
+                std::string command;
                 // 특정 노드가 발견됨  
-                std::string command = "pgrep -n " + node_name;   //-n :select most recently started ,-x : match exactly with the command name , -f : full process name to match
+                if(node_name =="r2r-comm/dist/r1.app"||"r2r-comm/dist/r2.server"||"r2r-comm/dist/r2.client"||"r2r-comm/dist/r3.server"||"r2r-comm/dist/r3.client"||"r2r-comm/dist/r4.app"||"r2r-comm/dist/r5.app"){
+                    command = "pgrep -f " +node_name;
+                }else{
+                    
+                command = "pgrep -n " + node_name;   //-n :select most recently started ,-x : match exactly with the command name , -f : full process name to match
+                }
                 FILE* pipe = popen(command.c_str(), "r");
                 
                 if (!pipe) {
@@ -106,7 +111,7 @@ class getCPU : public rclcpp::Node
             
                  
                 std::vector<std::string> node_names = 
-                 {"kt_navigation_m","r2r_r1a", "r2r_r2c", "r2r_r2s", "r2r_r3c", "r2r_r3s", "r2r_r4a", "r2r_r5a", 
+                 {"kt_navigation_m","r2r-comm/dist/r1.app","r2r-comm/dist/r2.server","r2r-comm/dist/r2.client","r2r-comm/dist/r3.server","r2r-comm/dist/r3.client","r2r-comm/dist/r4.app","r2r-comm/dist/r5.app",
                 "avoidance_manag", "avoidance_handl", "line_up_manager","line_up_handler", "recovery_manage",
                 "recovery_handle", "robot_manager_n","log_manager","priority_manage", "fleet_manager"
                 };
