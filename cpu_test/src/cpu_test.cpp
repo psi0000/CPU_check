@@ -59,7 +59,7 @@ struct ProcessInfo {
                 std::istringstream lineStream(line);
                 ProcessInfo processInfo;
                 lineStream >> processInfo.pid >>processInfo.name>> processInfo.pr>>processInfo.ni>>processInfo.virt>>processInfo.res>>processInfo.shr>>processInfo.s>>processInfo.cpuUsage>>processInfo.mem>>processInfo.time>> processInfo.command;
-                if(processInfo.cpuUsage >90.0){
+                if(processInfo.cpuUsage >100.0){
                     processList.push_back(processInfo);
                     
                 }
@@ -81,7 +81,6 @@ class CpuClient : public rclcpp::Node
             std::ofstream file("cur_time.txt");
             file.close();
             while(1){            
-                auto node1=std::make_shared<rclcpp::Node>("cur_time_node");
                 rclcpp::Clock clock(RCL_ROS_TIME);
                 rclcpp::Time current_time = clock.now();
                 // std::string cur_time=std::to_string(current_time.seconds());
@@ -92,7 +91,6 @@ class CpuClient : public rclcpp::Node
                 std::stringstream time_stream;
                 time_stream << local_time.tm_hour << ":" << local_time.tm_min<<":"<<local_time.tm_sec;
                 std::string cur_time=time_stream.str();
-                // RCLCPP_INFO(node1->get_logger(),"current_time : %s",cur_time.c_str());
                 
                 std::vector<ProcessInfo> topProcesses = GetTopProcesses(numProcesses);
                 
@@ -116,10 +114,6 @@ class CpuClient : public rclcpp::Node
                    
                 }
                 file.close();
-                //std::cout <<"*********************************************************************"<<std::endl;
-                
-                
-                //rclcpp::shutdown();
             }
              file.close();
 

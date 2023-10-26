@@ -11,6 +11,7 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
 #include <sstream>
+#include <map>
 
 struct ProcessInfo {
             int pid;
@@ -29,8 +30,8 @@ struct ProcessInfo {
 
 int getPID(const std::string &node_name) {
         
-                // 특정 노드가 발견됨
-                std::string command = "pgrep -f " + node_name;
+                // 특정 노드가 발견됨  
+                std::string command = "pgrep -n " + node_name;   //-n :select most recently started ,-x : match exactly with the command name , -f : full process name to match
                 FILE* pipe = popen(command.c_str(), "r");
                 
                 if (!pipe) {
@@ -38,7 +39,7 @@ int getPID(const std::string &node_name) {
                 }
                 
 
-                int pid;
+                int pid=0;
                 if (fscanf(pipe, "%d", &pid) == 1) {
                     pclose(pipe);
                     return pid; // 특정 노드의 PID 반환
@@ -47,7 +48,7 @@ int getPID(const std::string &node_name) {
             
         
         
-        return 0; // 특정 노드를 찾지 못함
+        return -1; // 특정 노드를 찾지 못함
     }
 
 
@@ -78,7 +79,7 @@ std::vector<ProcessInfo> getcpu(const int &node_pid){
                 std::istringstream lineStream(line);
                 ProcessInfo processInfo;
                 lineStream >> processInfo.pid >>processInfo.name>> processInfo.pr>>processInfo.ni>>processInfo.virt>>processInfo.res>>processInfo.shr>>processInfo.s>>processInfo.cpuUsage>>processInfo.mem>>processInfo.time>> processInfo.command;
-                if(processInfo.cpuUsage >5.0){
+                if(processInfo.cpuUsage >100.0){
                     processList.push_back(processInfo);
                     
                 }
@@ -101,7 +102,18 @@ class getCPU : public rclcpp::Node
                 file.close();
             //progress -> find pid   
                 std::vector<int> node_pids = {};
-                std::vector<std::string> node_names = {"/cpu_test","/rqt"}; // 원하는 노드 이름으로 변경
+                std::vector<std::string> node_names = {"cpu_test","rqt"}; // 원하는 노드 이름으로 변경
+            
+                /* 
+                std::vector<std::string> node_names = 
+                 {"r1.a", "r2.c", "r2.s", "r3.c", "r3.s", "r4.a", "r5.a", 
+                "avoidance_manager", "avoidance_handler", "line_up_manager","line_up_handler", "recovery_manager",
+                "recovery_handler", "robot_manager", "agent_handler","priority_manager", "fleet_manager",
+                "one_way_filter_saver", "one_way_filter_server", "one_way_detector"};
+                */
+
+
+
                 for (const std::string &node_name : node_names) {
                         // 각 노드의 PID를 가져오기
                         int pid = getPID(node_name);
@@ -112,6 +124,19 @@ class getCPU : public rclcpp::Node
                             RCLCPP_ERROR(rclcpp::get_logger(node_name), "Failed to find PID for node %s", node_name.c_str());
                         }
                 }
+
+                std::map<int,std::string> node_inf;
+
+                for (size_t i = 0; i < node_pids.size(); ++i) {
+                    node_inf[node_pids[i]] = node_names[i];
+                }
+
+                if(node_pids.size()==0){
+                    RCLCPP_ERROR(rclcpp::get_logger("shutdown"), " dont have Node for monitoring, So End now");
+                    rclcpp::shutdown();
+                    return ;
+                }
+
             //pid ->find cpu 
                 std::cout<<" Ready for monitoring PID"<<std::endl;
                 while(1){
@@ -132,14 +157,15 @@ class getCPU : public rclcpp::Node
                         std::ofstream file("mid_node_cpu.txt",std::ios::app);  
                         for(const int &node_pid : node_pids){
                             std::vector<ProcessInfo> logtrig = getcpu(node_pid);
+                            std::string pid_name = node_inf[node_pid];
                             if (logtrig.empty()) {
                             //std::cerr << "프로세스 정보를 가져오는 데 실패했습니다." << std::endl;
                             } else{
                                 for (const ProcessInfo& process : logtrig) {
-                                    std::cout<<"TIME: "<< cur_time<< " | PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | time: " << process.time << " | cmd: " << process.command  <<std::endl;
+                                    std::cout<<"NODE: "<< pid_name<<" | TIME: "<< cur_time<< " | PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | time: " << process.time << " | cmd: " << process.command  <<std::endl;
                                     
                                     if(file.is_open()){
-                                        file << "TIME: "<<cur_time<<" | PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | time: " << process.time << " | cmd: " << process.command<< std::endl;
+                                        file << "NODE: "<< pid_name<<" | TIME: "<<cur_time<<" | PID: " << process.pid << " | CPU 사용량(%): " << process.cpuUsage << " | time: " << process.time << " | cmd: " << process.command<< std::endl;
                                         
                                     }
                             
