@@ -59,7 +59,7 @@ struct ProcessInfo {
                 std::istringstream lineStream(line);
                 ProcessInfo processInfo;
                 lineStream >> processInfo.pid >>processInfo.name>> processInfo.pr>>processInfo.ni>>processInfo.virt>>processInfo.res>>processInfo.shr>>processInfo.s>>processInfo.cpuUsage>>processInfo.mem>>processInfo.time>> processInfo.command;
-                if(processInfo.cpuUsage >100.0){
+                if(processInfo.cpuUsage >0.0){
                     processList.push_back(processInfo);
                     
                 }
@@ -80,7 +80,7 @@ class CpuClient : public rclcpp::Node
             //reset file
             std::ofstream file("cur_time.txt");
             file.close();
-            while(1){            
+            while(rclcpp::ok()){            
                 rclcpp::Clock clock(RCL_ROS_TIME);
                 rclcpp::Time current_time = clock.now();
                 // std::string cur_time=std::to_string(current_time.seconds());
@@ -114,6 +114,7 @@ class CpuClient : public rclcpp::Node
                    
                 }
                 file.close();
+                
             }
              file.close();
 
