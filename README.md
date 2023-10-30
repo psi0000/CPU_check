@@ -25,8 +25,8 @@ test_node.cpp:
 
         1. Create a list of nodes to check (specific nodes you want to monitor; these may need modification).
         Note: This code assumes that the node name and process (command) are the same.
-        If that's not the case, you may need to modify it.
-        Alternatively, each node's code can publish its own PID using getpid() since each node receives a different PID every time it's run.
+            If that's not the case, you may need to modify it.
+            Alternatively, each node's code can publish its own PID using getpid() since each node receives a different PID every time it's run.
         2. Use the pgrep command to find the PID assigned to each node.
         3. Retrieve information based on the PID and use the top command to obtain information about the CPU usage of those PIDs. 
         4. Save this information to a file.
